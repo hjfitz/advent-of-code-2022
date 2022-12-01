@@ -64,3 +64,19 @@ fn part_two(dataset: &Vec<u32>) -> u32 {
     }
     total
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn should_compute_part_one() {
+        let dataset = vec![1, 2, 3, 3, 44];
+        assert_eq!(part_one(&dataset), 44);
+    }
+
+    #[test]
+    fn should_compute_part_three() {
+        let dataset = vec![1, 1111, 111111, 1112, 44];
+        assert_eq!(part_two(&dataset), 113334);
+    }
+}
