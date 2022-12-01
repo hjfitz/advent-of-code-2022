@@ -79,4 +79,12 @@ mod tests {
         let dataset = vec![1, 1111, 111111, 1112, 44];
         assert_eq!(part_two(&dataset), 113334);
     }
+
+    #[test]
+    fn should_parse_file() {
+        let file_contents = "1\n2\n\n2\n2\n\n3\n12314\n\n";
+        let parsed_file = parse_file(file_contents);
+        let expected_code: Vec<u32> = vec![3, 4, 12317, 0];
+        assert_eq!(parsed_file, expected_code);
+    }
 }
