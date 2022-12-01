@@ -1,17 +1,22 @@
-use std::fs;
+use std::{env, fs};
 
 fn main() {
-    println!("Hello, world!");
-    let result = with_highest_calories("./src/real-data");
-    println!("got {}", result);
+    let args: Vec<String> = env::args().collect();
+    let filename = &args[1];
+    let contents = fs::read_to_string(filename)
+        .unwrap_or_else(|_| panic!("Unable to read file '{}'", filename));
+
+    let dataset = parse_file(&contents);
+
+    let part_one_submission = part_one(&dataset);
+    let part_two_submission = part_two(&dataset);
+
+    println!("part one: {}", part_one_submission);
+    println!("part two: {}", part_two_submission);
 }
 
-fn with_highest_calories(fname: &str) -> usize {
-    // read the file
-    let contents =
-        fs::read_to_string(fname).expect(format!("Unable to read file '{}'", fname).as_str());
-    // split by newline, create tuples
-    let elves = contents
+fn parse_file(file_contents: &str) -> Vec<u32> {
+    file_contents
         .split("\n\n")
         .collect::<Vec<&str>>()
         .iter_mut()
@@ -28,15 +33,34 @@ fn with_highest_calories(fname: &str) -> usize {
                 })
                 .sum()
         })
-        .collect::<Vec<u32>>();
+        .collect::<Vec<u32>>()
+}
 
-    //let mut thiccest_elf = 0;
-    let mut thiccest_elf_value = 0;
-    for (_idx, elf) in elves.iter().enumerate() {
-        if elf > &thiccest_elf_value {
-            thiccest_elf_value = *elf;
+fn part_one(dataset: &Vec<u32>) -> u32 {
+    let mut max = 0;
+    for elf in dataset {
+        if elf > &max {
+            max = *elf;
+        }
+    }
+    max
+}
+
+fn part_two(dataset: &Vec<u32>) -> u32 {
+    let mut max_elves: [u32; 3] = [0, 0, 0];
+
+    for i in 0..3 {
+        for elf in dataset {
+            let val_already_present = max_elves[..i].contains(elf);
+            if *elf > max_elves[i] && !val_already_present {
+                max_elves[i] = *elf;
+            }
         }
     }
 
-    thiccest_elf_value.try_into().unwrap_or(0)
+    let mut total = 0;
+    for elf in max_elves {
+        total += elf;
+    }
+    total
 }
