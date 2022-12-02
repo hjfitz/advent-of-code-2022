@@ -66,7 +66,7 @@ fn part_two(dataset: &Vec<u32>) -> u32 {
 }
 
 #[cfg(test)]
-mod tests {
+mod thing {
     use super::*;
     #[test]
     fn should_compute_part_one() {
