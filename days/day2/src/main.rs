@@ -15,6 +15,8 @@ fn main() {
     println!("part two: {}", part_two_result);
 }
 
+type GameStrategy = Vec<Vec<RPS>>;
+
 #[derive(Debug)]
 enum RPS {
     Rock,
@@ -52,16 +54,15 @@ fn find_rps_for_result(their_play: &RPS, result: &GameResult) -> RPS {
         (RPS::Rock, GameResult::Win) => RPS::Paper,
         (RPS::Rock, GameResult::Draw) => RPS::Rock,
         (RPS::Rock, GameResult::Lose) => RPS::Scissors,
-        
+
         (RPS::Paper, GameResult::Win) => RPS::Scissors,
         (RPS::Paper, GameResult::Draw) => RPS::Paper,
         (RPS::Paper, GameResult::Lose) => RPS::Rock,
-        
+
         (RPS::Scissors, GameResult::Win) => RPS::Rock,
         (RPS::Scissors, GameResult::Draw) => RPS::Scissors,
         (RPS::Scissors, GameResult::Lose) => RPS::Paper,
     }
-        
 }
 
 /// check if the game is won for personA
@@ -71,16 +72,15 @@ fn is_game_won(person_a: &RPS, person_b: &RPS) -> GameResult {
         [RPS::Rock, RPS::Rock] => GameResult::Draw,
         [RPS::Rock, RPS::Paper] => GameResult::Lose,
         [RPS::Rock, RPS::Scissors] => GameResult::Win,
-        
+
         [RPS::Paper, RPS::Paper] => GameResult::Draw,
         [RPS::Paper, RPS::Scissors] => GameResult::Lose,
         [RPS::Paper, RPS::Rock] => GameResult::Win,
-        
+
         [RPS::Scissors, RPS::Scissors] => GameResult::Draw,
         [RPS::Scissors, RPS::Rock] => GameResult::Lose,
         [RPS::Scissors, RPS::Paper] => GameResult::Win,
     }
-
 }
 
 fn rps_to_points(rps: &RPS) -> u32 {
@@ -99,7 +99,7 @@ fn game_result_to_points(result: &GameResult) -> u32 {
     }
 }
 
-fn parse_file(file: String) -> Vec<Vec<RPS>> {
+fn parse_file(file: String) -> GameStrategy {
     file.split('\n')
         .collect::<Vec<&str>>()
         .iter_mut()
@@ -114,7 +114,7 @@ fn parse_file(file: String) -> Vec<Vec<RPS>> {
         .collect::<Vec<Vec<RPS>>>()
 }
 
-fn part_one(game_strategy: &Vec<Vec<RPS>>) -> u32 {
+fn part_one(game_strategy: &GameStrategy) -> u32 {
     let mut total = 0;
     for game in game_strategy {
         let hand_points = rps_to_points(&game[1]);
@@ -127,7 +127,7 @@ fn part_one(game_strategy: &Vec<Vec<RPS>>) -> u32 {
     total
 }
 
-fn part_two(game_strategy: &Vec<Vec<RPS>>) -> u32 {
+fn part_two(game_strategy: &GameStrategy) -> u32 {
     let mut total = 0;
 
     for game in game_strategy {
@@ -143,9 +143,26 @@ fn part_two(game_strategy: &Vec<Vec<RPS>>) -> u32 {
     total
 }
 
-
 #[cfg(test)]
 mod day_two_tests {
+    use super::*;
+
+    fn get_dummy_input() -> &'static str {
+        "A Y\nB X\nC Z"
+    }
+
+    fn get_dummy_strat() -> GameStrategy {
+        vec![
+            vec![RPS::Rock, RPS::Paper],
+            vec![RPS::Paper, RPS::Rock],
+            vec![RPS::Scissors, RPS::Scissors],
+        ]
+    }
     #[test]
-    fn it() {}
+    fn it_should_parse_input() {
+        let input = get_dummy_input();
+        let expected_strat = get_dummy_strat();
+        let generated_strat = parse_file(input.to_string());
+        //assert_eq!(expected_strat, generated_strat);
+    }
 }
