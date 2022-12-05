@@ -88,29 +88,11 @@ fn part_two(raw_contents: &str) -> usize {
         } else {
             (&"", &"", &"")
         };
-        // let name = find_group_name((l1, l2, l3));
-        // let val = get_value_for_char(&name);
         let val = find_group_value(vec![l1, l2, l3]);
         total += val;
     }
 
     total
-}
-
-fn _find_group_name(groups: (&str, &str, &str)) -> char {
-    let name = ' ';
-
-    for chr_1 in groups.0.chars() {
-        for chr_2 in groups.1.chars() {
-            for chr_3 in groups.2.chars() {
-                if chr_1 == chr_2 && chr_1 == chr_3 {
-                    return chr_1;
-                }
-            }
-        }
-    }
-
-    name
 }
 
 fn find_group_value(groups: Vec<&str>) -> usize {
@@ -132,7 +114,23 @@ fn find_group_value(groups: Vec<&str>) -> usize {
         .position(|l| l == (&1, (&2, &3))); // could have easily done something like true,true,true
                                             // or 1,1,1
 
-    results.unwrap_or(0) 
+    results.unwrap_or(0)
+}
+
+fn _find_group_name(groups: (&str, &str, &str)) -> char {
+    let name = ' ';
+
+    for chr_1 in groups.0.chars() {
+        for chr_2 in groups.1.chars() {
+            for chr_3 in groups.2.chars() {
+                if chr_1 == chr_2 && chr_1 == chr_3 {
+                    return chr_1;
+                }
+            }
+        }
+    }
+
+    name
 }
 
 fn get_value_for_char(c: &char) -> usize {
