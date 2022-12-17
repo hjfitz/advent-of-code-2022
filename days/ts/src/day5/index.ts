@@ -1,13 +1,12 @@
 import {readFileSync} from 'fs'
 import path from 'path'
-import {filter, flatten, join, map, split, takeLast} from 'ramda'
+import {clone, filter, map, split} from 'ramda'
 import {isTruthy, toNumber} from 'ramda-adjunct'
+import {peekStacks, removeEmpty, splitLines, toNumbers} from '../lib/funcs'
 
-const isEmpty = (str: string) => isTruthy(str?.trim())
 
-const toNumbers = (line: string) => map(toNumber, filter(isTruthy, split(/[^0-9]/, line)))
 function parseInstructions(instructionLines: string): number[][] {
-	return map(toNumbers, split('\n', instructionLines))
+	return map(toNumbers, splitLines(instructionLines))
 }
 
 function pull<T>(count: number, from: T[]) {
@@ -20,7 +19,7 @@ function pull<T>(count: number, from: T[]) {
 
 
 function parseStacks(stacksStr: string): string[][] {
-	const stackLines = stacksStr.split('\n')
+	const stackLines = splitLines(stacksStr)
 	const stackHeadersRaw = stackLines.pop() as string
 	const stackHeaders = map(toNumber, filter(isTruthy, split(/\s/, stackHeadersRaw)))
 	const totalStacks = stackHeaders.pop() ?? 0
@@ -34,26 +33,37 @@ function parseStacks(stacksStr: string): string[][] {
 		}
 	}
 
-	return map(filter(isEmpty), stacks)
+	return map(removeEmpty, stacks)
 }
-export function partOne(input: string): string {
-	const [stacksStr, instructionsStr]  = input.split('\n\n')
-	const stacks = parseStacks(stacksStr)
-	const instructions = parseInstructions(instructionsStr)
+export function partOne(stacks: string[][], instructions: number[][]): string {
 	for (const [moveCount, from, to] of instructions) {
 		const toMove = pull(moveCount, stacks[from - 1]) as string[]
 		stacks[to - 1].push(...toMove)
 	}
 
-	return join('', flatten(map(takeLast(1), stacks)))
+	return peekStacks(stacks)
+}
+
+function partTwo(stacks: string[][], instructions: number[][]): string {
+	for (const [moveCount, from, to] of instructions) {
+		const toMove = pull(moveCount, stacks[from - 1]) as string[]
+		stacks[to - 1].push(...toMove.reverse())
+	}
+	return peekStacks(stacks)
 }
 
 function main() {
 	const inFile = path.join(process.cwd(), 'src/inputs/day5')
 	const inRaw = readFileSync(inFile)
-	const input = inRaw.toString()
-	const partOneResult = partOne(input.trimEnd())
+	const input = inRaw.toString().trimEnd()
+	const [rawStacks, rawInstructions] = input.split('\n\n')
+	const stacks = parseStacks(rawStacks)
+	const instructions = parseInstructions(rawInstructions)
+
+	const partOneResult = partOne(clone(stacks), clone(instructions))
+	const partTwoResult = partTwo(clone(stacks), clone(instructions))
 	console.log('Day 1:', partOneResult)
+	console.log('Day 2:', partTwoResult)
 }
 
 // don't do this in prod, kids
