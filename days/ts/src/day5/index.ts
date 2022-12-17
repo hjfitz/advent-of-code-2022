@@ -1,7 +1,7 @@
-import { readFileSync } from "fs"
-import path from "path"
-import { filter, flatten, join, map, split, takeLast } from "ramda"
-import { isTruthy, toNumber } from "ramda-adjunct"
+import {readFileSync} from 'fs'
+import path from 'path'
+import {filter, flatten, join, map, split, takeLast} from 'ramda'
+import {isTruthy, toNumber} from 'ramda-adjunct'
 
 const isEmpty = (str: string) => isTruthy(str?.trim())
 
@@ -34,8 +34,7 @@ function parseStacks(stacksStr: string): string[][] {
 		}
 	}
 
-	const sanit = map(filter(isEmpty), stacks)
-	return sanit
+	return map(filter(isEmpty), stacks)
 }
 export function partOne(input: string): string {
 	const [stacksStr, instructionsStr]  = input.split('\n\n')
@@ -53,7 +52,7 @@ function main() {
 	const inFile = path.join(process.cwd(), 'src/inputs/day5')
 	const inRaw = readFileSync(inFile)
 	const input = inRaw.toString()
-	const partOneResult = partOne(input.trim())
+	const partOneResult = partOne(input.trimEnd())
 	console.log('Day 1:', partOneResult)
 }
 
@@ -61,6 +60,4 @@ function main() {
 if (process.env.NODE_ENV !== 'test') {
 	main()
 }
-
-
 
