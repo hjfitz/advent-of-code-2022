@@ -1,47 +1,53 @@
 import { readFileSync } from "fs";
 import path from "path";
 
-class FileNode {
+interface FSNode {
+	name: string
+	size: number
+}
+
+class FileNode implements FSNode {
 	constructor(
 		public readonly name: string,
 		public readonly size: number,
 	){}
 }
 
+class RootNode implements FSNode {
+	public children: FSNode[] = []
+	public name = '/'
 
-class FolderNode {
-	public children: FilesystemObject[] = []
-	constructor(
-		public readonly name: string,
-		public readonly parent: FolderNode | null,
-	){}
-
-	public getSize(): number {
+	public get size(): number {
 		let total = 0;
 		for (const child of this.children) {
-			if (child instanceof FileNode) {
-				total += child.size
-			} else {
-				total += child.getSize()
-			}
+			total += child.size
 		}
 		return total
 	}
 
 }
 
-type FilesystemObject = FileNode | FolderNode
+class FolderNode extends RootNode {
+	constructor(
+		public name: string,
+		public readonly parent: FolderNode,
+	) {
+		super()
+	}
+}
 
 class State {
-	public root: FolderNode | null = null
+	public cwd: RootNode | FolderNode
 	constructor(
-		public cwd: FolderNode | null
-	){}
+		public root: RootNode
+	){
+		this.cwd = root
+	}
 }
 
 function buildFilesystem(input: string): State {
 	const commandsRun = input.split('\n$').map(line => line.replace(/^\$/, '').trim())
-	const state = new State(null)
+	const state = new State(new RootNode())
 	for (const line of commandsRun) {
 		const [, dirTo] = line.split(' ')
 		const command = line.substring(0, 2)
@@ -75,14 +81,17 @@ function changeDir(to: string, state: State) {
 		case '/': {
 			// if there's no state.cwd, create it
 			if (!state.cwd) {
-				const rootNode = new FolderNode('/', null)
+				const rootNode = new FolderNode('/', state.cwd)
 				state.root = state.cwd = rootNode
 			}
 			break
 		}
 		case '..': {
+			if (state.cwd instanceof FolderNode) {
+				state.cwd = state.cwd.parent
+				break
+			}
 			// go to state.cwd.parent
-			state.cwd = state.cwd!.parent
 			break
 		}
 		default: {
@@ -94,12 +103,14 @@ function changeDir(to: string, state: State) {
 			if (child instanceof FileNode) {
 				throw new Error('Unable to change directory to a file')
 			}
-			state.cwd = child
+			if (child instanceof RootNode || child instanceof FolderNode) {
+				state.cwd = child
+			}
 		}
 	}
 }
 
-function* graphToList(node: FolderNode): Generator<FolderNode> {
+function* graphToList(node: FolderNode | RootNode): Generator<FolderNode> {
 	for (const child of node.children) {
 		if (child instanceof FolderNode) {
 			yield child
@@ -110,8 +121,8 @@ function* graphToList(node: FolderNode): Generator<FolderNode> {
 
 function partOne(input: string) {
 	const filesystem = buildFilesystem(input)
-	const folders = [...graphToList(filesystem.root!)] 
-	const size = folders.map(f => f.getSize()).filter(s => s <= 100000).reduce((a, b) => a + b)
+	const folders = [...graphToList(filesystem.root)] 
+	const size = folders.map(f => f.size).filter(s => s <= 100000).reduce((a, b) => a + b)
 	console.log('Part one:', size)
 }
 
@@ -119,10 +130,10 @@ function partTwo(input: string) {
 	const TOTAL_SPACE = 70000000
 	const UPDATE_SIZE = 30000000
 	const filesystem = buildFilesystem(input)
-	const folders = [...graphToList(filesystem.root!)] as FolderNode[]
-	const remainingSpace = TOTAL_SPACE - (filesystem?.root?.getSize() ?? 0)
+	const folders = [...graphToList(filesystem.root)] as FolderNode[]
+	const remainingSpace = TOTAL_SPACE - (filesystem.root.size ?? 0)
 	const spaceNeeded = UPDATE_SIZE - remainingSpace
-	const applicableFolders = folders.map(f => f.getSize()).filter(f => f >= spaceNeeded).sort((a, b) => a - b)
+	const applicableFolders = folders.map(f => f.size).filter(f => f >= spaceNeeded).sort((a, b) => a - b)
 	console.log('Part two:', applicableFolders[0])
 }
 
